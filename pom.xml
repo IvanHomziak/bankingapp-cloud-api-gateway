@@ -13,19 +13,6 @@
     <version>0.0.1-SNAPSHOT</version>
     <name>ApiGateway</name>
     <description>BankingCloudApiGateway</description>
-    <url/>
-    <licenses>
-        <license/>
-    </licenses>
-    <developers>
-        <developer/>
-    </developers>
-    <scm>
-        <connection/>
-        <developerConnection/>
-        <tag/>
-        <url/>
-    </scm>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -116,6 +103,7 @@
     </dependencyManagement>
 
     <build>
+        <finalName>bankingapp-cloud-api-gateway-ms</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
