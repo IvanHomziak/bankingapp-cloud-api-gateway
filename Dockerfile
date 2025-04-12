@@ -12,7 +12,7 @@ WORKDIR /app
 # Clone and build bankingapp-common
 RUN git clone https://github.com/IvanHomziak/bankingapp-common.git && \
     cd bankingapp-common && \
-    mvn clean install -DskipTests
+    mvn clean install -DskipTests=true
 
 # Go back to /app directory
 WORKDIR /app
