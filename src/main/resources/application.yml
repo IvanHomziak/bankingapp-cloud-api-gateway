@@ -1,0 +1,225 @@
+spring:
+  application:
+    name: api-gateway-ms
+  config:
+    import: optional:configserver:http://localhost:8888
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+  cloud:
+    gateway:
+      routes:
+        - id: users-status-check
+          uri: lb://users-ms
+          predicates:
+            - Path=/users-ms/api/v1/clients/status/check
+            - Method=GET
+            - Header=Authorization, Bearer (.*)
+          filters:
+            - RemoveRequestHeader=Cookie
+            - RewritePath=/users-ms/(?<segment>.*), /${segment}
+            - AuthorizationHeaderFilter
+
+        - id: users-ms
+          uri: lb://users-ms
+          predicates:
+            - Path=/users-ms/api/v1/users
+            - Method=POST
+          filters:
+            - RemoveRequestHeader=Cookie
+            - RewritePath=/users-ms/api/v1/(?<path>.*), /api/v1/${path}
+
+        - id: users-ms-login
+          uri: lb://users-ms
+          predicates:
+            - Path=/users-ms/api/v1/users/login
+            - Method=POST
+          filters:
+            - RemoveRequestHeader=Cookie
+            - RewritePath=/users-ms/(?<segment>.*), /${segment}
+
+        - id: users-ms-get-update-delete
+          uri: lb://users-ms
+          predicates:
+            - Path=/users-ms/api/v1/users/**
+            - Method=GET,PUT,DELETE
+            - Header=Authorization, Bearer (.*)
+          filters:
+            - RemoveRequestHeader=Cookie
+            - AuthorizationHeaderFilter
+            - RewritePath=/users-ms/(?<segment>.*), /${segment}
+
+        - id: users-ms-h2-console
+          uri: lb://users-ms
+          predicates:
+            - Path=/users-ms/api/v1/h2-console
+            - Method=GET
+          filters:
+            - RemoveRequestHeader=Cookie
+            - RewritePath=/users-ms/(?<segment>.*), /${segment}
+
+        - id: users-ms-actuator
+          uri: lb://users-ms
+          predicates:
+            - Path=/users-ms/api/v1/actuator/**
+            - Method=GET
+          filters:
+            - RemoveRequestHeader=Cookie
+            - RewritePath=/users-ms/(?<segment>.*), /${segment}
+
+        - id: client-account-ms
+          uri: lb://client-account-ms
+          predicates:
+            - Path=/client-account-ms/api/v1//clients/**
+            - Method=GET,POST,PUT,PATCH,DELETE
+            - Header=Authorization, Bearer (.*)
+          filters:
+            - RemoveRequestHeader=Cookie
+            - AuthorizationHeaderFilter
+            - RewritePath=/client-account-ms/(?<segment>.*), /${segment}
+
+        - id: transaction-ms-get-post
+          uri: lb://transaction-ms
+          predicates:
+            - Path=/transaction-ms/api/v1/transaction/**
+            - Method=POST,GET
+            - Header=Authorization, Bearer (.*)
+          filters:
+            - RemoveRequestHeader=Cookie
+            - AuthorizationHeaderFilter
+            - RewritePath=/transaction-ms/(?<segment>.*), /${segment}
+
+        - id: transaction-ms-cansel
+          uri: lb://transaction-ms
+          predicates:
+            - Path=/transaction-ms/api/v1/transaction/cansel/**
+            - Method=GET
+            - Header=Authorization, Bearer (.*)
+          filters:
+            - RemoveRequestHeader=Cookie
+            - AuthorizationHeaderFilter
+            - RewritePath=/transaction-ms/(?<segment>.*), /${segment}
+
+server:
+  port: ${PORT:8082}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8010/eureka/
+  instance:
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${server.port}}
+    preferIpAddress: true
+
+token:
+  secret: dgjorufhrsnjdu438fkdj38fdmcv7dm3ckvhrsnjjuwelueivhe848fhedldh5ndk
+
+management:
+  endpoint:
+    gateway:
+      access: unrestricted
+  endpoints:
+    web:
+      exposure:
+        include: gateway,health,mappings
+#
+#        spring.application.name=api-gateway-ms
+#        server.port=${PORT:8082}
+#
+#        ### Configuration server URI
+#        spring.config.import=optional:configserver:http://localhost:8888
+#        #spring.config.import=configserver:http://localhost:8888
+#
+#        ### Use eureka-server (Docker container name) instead of localhost
+#        eureka.client.service-url.defaultZone=http://localhost:8010/eureka/
+#        eureka.instance.instance-id=${spring.application.name}:${spring.application.instance_id:${server.port}}
+#        eureka.instance.preferIpAddress=true
+#
+#        spring.cloud.gateway.routes[0].id=users-status-check
+#        spring.cloud.gateway.routes[0].uri=lb://users-ms
+#        spring.cloud.gateway.routes[0].predicates[0]=Path=/users-ms/users/status/check
+#        spring.cloud.gateway.routes[0].predicates[1]=Method=GET
+#        spring.cloud.gateway.routes[0].predicates[2]=Header=Authorization, Bearer (.*)
+#        spring.cloud.gateway.routes[0].filters[0]=RemoveRequestHeader=Cookie
+#        spring.cloud.gateway.routes[0].filters[1]=RewritePath=/users-ms/(?<segment>.*), /$\{segment}
+#        spring.cloud.gateway.routes[0].filters[2]=AuthorizationHeaderFilter
+#
+#        spring.cloud.gateway.routes[1].id=users-ms
+#        spring.cloud.gateway.routes[1].uri=lb://users-ms
+#        spring.cloud.gateway.routes[1].predicates[0]=Path=/users-ms/users
+#        spring.cloud.gateway.routes[1].predicates[1]=Method=POST
+#        spring.cloud.gateway.routes[1].filters[0]=RemoveRequestHeader=Cookie
+#        spring.cloud.gateway.routes[1].filters[1]=RewritePath=/users-ms/(?<segment>.*), /$\{segment}
+#
+#        spring.cloud.gateway.routes[2].id=users-ms-login
+#        spring.cloud.gateway.routes[2].uri=lb://users-ms
+#        spring.cloud.gateway.routes[2].predicates[0]=Path=/users-ms/users/login
+#        spring.cloud.gateway.routes[2].predicates[1]=Method=POST
+#        spring.cloud.gateway.routes[2].filters[0]=RemoveRequestHeader=Cookie
+#        spring.cloud.gateway.routes[2].filters[1]=RewritePath=/users-ms/(?<segment>.*), /$\{segment}
+#
+#        spring.cloud.gateway.routes[3].id=users-ms-get-update-delete
+#        spring.cloud.gateway.routes[3].uri=lb://users-ms
+#        spring.cloud.gateway.routes[3].predicates[0]=Path=/users-ms/users/**
+#        spring.cloud.gateway.routes[3].predicates[1]=Method=GET,PUT,DELETE
+#        spring.cloud.gateway.routes[3].predicates[2]=Header=Authorization, Bearer (.*)
+#        spring.cloud.gateway.routes[3].filters[0]=RemoveRequestHeader=Cookie
+#        spring.cloud.gateway.routes[3].filters[1]=AuthorizationHeaderFilter
+#        spring.cloud.gateway.routes[3].filters[2]=RewritePath=/users-ms/(?<segment>.*), /$\{segment}
+#
+#        spring.cloud.gateway.routes[4].id=users-ms-h2-console
+#        spring.cloud.gateway.routes[4].uri=lb://users-ms
+#        spring.cloud.gateway.routes[4].predicates[0]=Path=/users-ms/h2-console
+#        spring.cloud.gateway.routes[4].predicates[1]=Method=GET
+#        spring.cloud.gateway.routes[4].filters[0]=RemoveRequestHeader=Cookie
+#        spring.cloud.gateway.routes[4].filters[1]=RewritePath=/users-ms/(?<segment>.*), /$\{segment}
+#
+#        spring.cloud.gateway.routes[5].id=users-ms-actuator
+#        spring.cloud.gateway.routes[5].uri=lb://users-ms
+#        spring.cloud.gateway.routes[5].predicates[0]=Path=/users-ms/actuator/**
+#        spring.cloud.gateway.routes[5].predicates[1]=Method=GET
+#        spring.cloud.gateway.routes[5].filters[0]=RemoveRequestHeader=Cookie
+#        spring.cloud.gateway.routes[5].filters[1]=RewritePath=/users-ms/(?<segment>.*), /$\{segment}
+#
+#
+#        spring.cloud.gateway.routes[6].id=client-account-ms
+#        spring.cloud.gateway.routes[6].uri=lb://client-account-ms
+#        spring.cloud.gateway.routes[6].predicates[0]=Path=/client-account-ms/api/clients/**
+#        spring.cloud.gateway.routes[6].predicates[1]=Method=GET,POST,PUT,PATCH,DELETE
+#        spring.cloud.gateway.routes[6].predicates[2]=Header=Authorization, Bearer (.*)
+#        spring.cloud.gateway.routes[6].filters[0]=RemoveRequestHeader=Cookie
+#        spring.cloud.gateway.routes[6].filters[1]=AuthorizationHeaderFilter
+#        spring.cloud.gateway.routes[6].filters[2]=RewritePath=/client-account-ms/(?<segment>.*), /$\{segment}
+#
+#        spring.cloud.gateway.routes[7].id=transaction-ms-get-post
+#        spring.cloud.gateway.routes[7].uri=lb://transaction-ms
+#        spring.cloud.gateway.routes[7].predicates[0]=Path=/transaction-ms/api/transaction/**
+#        spring.cloud.gateway.routes[7].predicates[1]=Method=POST,GET
+#        spring.cloud.gateway.routes[7].predicates[2]=Header=Authorization, Bearer (.*)
+#        spring.cloud.gateway.routes[7].filters[0]=RemoveRequestHeader=Cookie
+#        spring.cloud.gateway.routes[7].filters[1]=AuthorizationHeaderFilter
+#        spring.cloud.gateway.routes[7].filters[2]=RewritePath=/transaction-ms/(?<segment>.*), /$\{segment}
+#
+#        spring.cloud.gateway.routes[8].id=transaction-ms-cansel
+#        spring.cloud.gateway.routes[8].uri=lb://transaction-ms
+#        spring.cloud.gateway.routes[8].predicates[0]=Path=/transaction-ms/api/transaction/cansel/**
+#        spring.cloud.gateway.routes[8].predicates[1]=Method=GET
+#        spring.cloud.gateway.routes[8].predicates[2]=Header=Authorization, Bearer (.*)
+#        spring.cloud.gateway.routes[8].filters[0]=RemoveRequestHeader=Cookie
+#        spring.cloud.gateway.routes[8].filters[1]=AuthorizationHeaderFilter
+#        spring.cloud.gateway.routes[8].filters[2]=RewritePath=/transaction-ms/(?<segment>.*), /$\{segment}
+#        #spring.cloud.gateway.discovery.locator.enabled=true
+#        #spring.cloud.gateway.discovery.locator.lower-case-service-id=true
+#
+#        token.secret=dgjorufhrsnjdu438fkdj38fdmcv7dm3ckvhrsnjjuwelueivhe848fhedldh5ndk
+#
+#        ### Actuator
+#        management.endpoint.gateway.access=unrestricted
+#        management.endpoints.web.exposure.include=gateway,health,mappings
+#
+#        spring.rabbitmq.host=localhost
+#        spring.rabbitmq.port=5672
+#        spring.rabbitmq.username=guest
+#        spring.rabbitmq.password=guest
