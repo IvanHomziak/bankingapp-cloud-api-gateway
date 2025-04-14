@@ -147,7 +147,7 @@ spring:
           filters:
             - RemoveRequestHeader=Cookie
             - AuthorizationHeaderFilter
-            - RewritePath=/transaction-ms/(?<segment>.*), /${segment}
+            - RewritePath=/transaction-ms/api/v1/transaction, /api/v1/transaction
 
         - id: transaction-ms-get-transaction
           uri: lb://transaction-ms
