@@ -1,3 +1,6 @@
+server:
+  port: ${PORT:8082}
+
 spring:
   application:
     name: api-gateway-ms
@@ -91,7 +94,7 @@ spring:
           filters:
             - RemoveRequestHeader=Cookie
             - AuthorizationHeaderFilter
-            - RewritePath=/transaction-ms/(?<segment>.*), /${segment}
+            - RewritePath=/client-account-ms/(?<segment>.*), /${segment}
 
         - id: client-account-ms-get-account
           uri: lb://client-account-ms
@@ -113,7 +116,7 @@ spring:
           filters:
             - RemoveRequestHeader=Cookie
             - AuthorizationHeaderFilter
-            - RewritePath=/transaction-ms/(?<segment>.*), /${segment}
+            - RewritePath=/client-account-ms/(?<segment>.*), /${segment}
 
         - id: client-account-ms-update-account
           uri: lb://client-account-ms
@@ -124,7 +127,7 @@ spring:
           filters:
             - RemoveRequestHeader=Cookie
             - AuthorizationHeaderFilter
-            - RewritePath=/transaction-ms/(?<segment>.*), /${segment}
+            - RewritePath=/client-account-ms/(?<segment>.*), /${segment}
 
         - id: client-account-ms-delete-account
           uri: lb://client-account-ms
@@ -135,7 +138,7 @@ spring:
           filters:
             - RemoveRequestHeader=Cookie
             - AuthorizationHeaderFilter
-            - RewritePath=/transaction-ms/(?<segment>.*), /${segment}
+            - RewritePath=/client-account-ms/(?<segment>.*), /${segment}
 
         ### transaction-ms
         - id: transaction-ms-create-transaction
@@ -147,7 +150,7 @@ spring:
           filters:
             - RemoveRequestHeader=Cookie
             - AuthorizationHeaderFilter
-            - RewritePath=/transaction-ms/api/v1/transaction, /api/v1/transaction
+            - RewritePath=/transaction-ms/(?<segment>.*), /${segment}
 
         - id: transaction-ms-get-transaction
           uri: lb://transaction-ms
@@ -172,13 +175,14 @@ spring:
             - RewritePath=/transaction-ms/(?<segment>.*), /${segment}
 
 
-server:
-  port: ${PORT:8082}
+
 
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8010/eureka/
+    register-with-eureka: true
+    fetch-registry: true
   instance:
     instance-id: ${spring.application.name}:${spring.application.instance_id:${server.port}}
     preferIpAddress: true
